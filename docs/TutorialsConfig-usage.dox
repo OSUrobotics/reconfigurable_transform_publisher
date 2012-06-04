@@ -1,0 +1,15 @@
+\subsubsection usage Usage
+\verbatim
+<node name="dynamic_tutorials" pkg="reconfigurable_transform_publisher" type="dynamic_tutorials">
+  <param name="x" type="double" value="0.5" />
+  <param name="y" type="double" value="0.5" />
+  <param name="z" type="double" value="0.5" />
+  <param name="alpha" type="double" value="0.5" />
+  <param name="beta" type="double" value="0.5" />
+  <param name="gamma" type="double" value="0.5" />
+  <param name="str_param" type="str" value="Hello World" />
+  <param name="bool_param" type="bool" value="True" />
+  <param name="size" type="int" value="1" />
+</node>
+\endverbatim
+

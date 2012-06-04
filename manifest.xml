@@ -1,0 +1,17 @@
+<package>
+  <description brief="reconfigurable_transform_publisher">
+
+     reconfigurable_transform_publisher
+
+  </description>
+  <author>Dan Lazewatsky</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/reconfigurable_transform_publisher</url>
+  <depend package="rospy"/>
+  <depend package="tf"/>
+  <depend package="dynamic_reconfigure"/>
+
+</package>
+
+

@@ -1,0 +1,14 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~x" : \b [double] x translation min: 0.0, default: 0.5, max: 1.0
+- \b "~y" : \b [double] y translation min: 0.0, default: 0.5, max: 1.0
+- \b "~z" : \b [double] z translation min: 0.0, default: 0.5, max: 1.0
+- \b "~alpha" : \b [double] rotation about the x-axis min: 0.0, default: 0.5, max: 1.0
+- \b "~beta" : \b [double] rotation about the y-axis min: 0.0, default: 0.5, max: 1.0
+- \b "~gamma" : \b [double] rotation about the z-axis min: 0.0, default: 0.5, max: 1.0
+- \b "~str_param" : \b [str] A string parameter min: , default: Hello World, max: 
+- \b "~bool_param" : \b [bool] A Boolean parameter min: False, default: True, max: True
+- \b "~size" : \b [int] A size parameter which is edited via an enum min: 0, default: 1, max: 3
+
