@@ -5,17 +5,55 @@ from dynamic_reconfigure.server import Server
 from reconfigurable_transform_publisher.cfg import TransformConfig
 import rospy
 import tf
-from tf.transformations import quaternion_from_euler
+from tf.transformations import quaternion_from_euler, euler_from_quaternion
+import sys
+from threading import RLock
+
+config_lock = RLock()
+broadcaster = None
+trans, rot = None, None
+parent, child = None, None
 
 def config_cb(config, level):
-    print 'got config'
-    print config
-    return config
+    global trans, rot, parent, child
+    with config_lock:
+        if config == TransformConfig.defaults:
+            config['child_frame'] = child
+            config['parent_frame'] = parent
+            config['x'], config['y'], config['z'] = trans
+            config['yaw'], config['pitch'], config['roll'] = euler_from_quaternion(rot)
+        else:
+            trans = config['x'], config['y'], config['z']
+            rot = quaternion_from_euler(config['yaw'], config['pitch'], config['roll'])
+            parent = config['parent_frame']
+            child = config['child_frame']
+            
+        return config
 
 if __name__ == '__main__':
-    print 1
+    if len(sys.argv) == 10: # yaw-pitch-roll
+        with config_lock:
+            trans = [float(n) for n in sys.argv[1:4]]
+            rot   = quaternion_from_euler(*[float(n) for n in sys.argv[4:7]])
+            parent = sys.argv[7]
+            child  = sys.argv[8]
+    elif len(sys.argv) == 11: # quaternion
+        with config_lock:
+            trans = [float(n) for n in sys.argv[1:4]]
+            rot   = [float(n) for n in sys.argv[4:8]]
+            parent = sys.argv[8]
+            child  = sys.argv[9]
+    else:
+        sys.stderr.write('''Usage: reconfigurable_transform_publisher x y z yaw pitch roll frame_id child_frame_id  period(milliseconds) 
+OR 
+Usage: reconfigurable_transform_publisher x y z qx qy qz qw frame_id child_frame_id  period(milliseconds) 
+''')
+        sys.exit(1)
+        
     rospy.init_node(PACKAGE)
-    print 2
+    broadcaster = tf.TransformBroadcaster()
     srv = Server(TransformConfig, config_cb)
-    print 3
-    rospy.spin()
+    r = rospy.Rate(20)
+    while not rospy.is_shutdown():
+        with config_lock:
+            broadcaster.sendTransform(trans, rot, rospy.Time.now(), child, parent)
