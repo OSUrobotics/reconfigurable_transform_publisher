@@ -1,7 +1,7 @@
 <package>
   <description brief="reconfigurable_transform_publisher">
 
-     reconfigurable_transform_publisher
+     Like tf/static_transform_publisher, but is reconfigurable at runtime using dynamic reconfigure.
 
   </description>
   <author>Dan Lazewatsky</author>
