@@ -16,6 +16,14 @@ parent, child = None, None
 period = 100.0
 inited = False
 
+def set_from_config(config):
+    global trans, rot, parent, child, inited
+    trans = config['x'], config['y'], config['z']
+    rot = quaternion_from_euler(config['roll'], config['pitch'], config['yaw'])
+    parent = config['parent_frame']
+    child = config['child_frame']
+    inited = True
+
 
 def config_cb(config, level):
     global trans, rot, parent, child, inited
@@ -27,11 +35,7 @@ def config_cb(config, level):
             config['yaw'], config['pitch'], config['roll'] = euler_from_quaternion(rot, axes='szyx')
             inited = True
         else:
-            trans = config['x'], config['y'], config['z']
-            rot = quaternion_from_euler(config['roll'], config['pitch'], config['yaw'])
-            parent = config['parent_frame']
-            child = config['child_frame']
-            
+            set_from_config(config)
         return config
 
 if __name__ == '__main__':
@@ -49,12 +53,14 @@ if __name__ == '__main__':
             parent = sys.argv[8]
             child  = sys.argv[9]
             period = float(sys.argv[10])
-    else:
+    elif len(sys.argv) == 2 and sys.argv[1] == '-h':
         sys.stderr.write('''Usage: reconfigurable_transform_publisher x y z yaw pitch roll frame_id child_frame_id  period(milliseconds) 
 OR 
 Usage: reconfigurable_transform_publisher x y z qx qy qz qw frame_id child_frame_id  period(milliseconds) 
 ''')
         sys.exit(1)
+    else:
+        set_from_config(TransformConfig.defaults)
         
     rospy.init_node(PACKAGE)
     broadcaster = tf.TransformBroadcaster()
@@ -62,5 +68,13 @@ Usage: reconfigurable_transform_publisher x y z qx qy qz qw frame_id child_frame
     r = rospy.Rate(1/(period/1000.0))
     while not rospy.is_shutdown():
         with config_lock:
-            broadcaster.sendTransform(trans, rot, rospy.Time.now(), child, parent)
+            broadcaster.sendTransform(trans, rot, rospy.Time.now()+r.sleep_dur, child, parent)
         r.sleep()
+    transform_dict = dict()
+    transform_dict['x'], transform_dict['y'],transform_dict['z'] = trans
+    transform_dict['ax'], transform_dict['ay'], transform_dict['az'], transform_dict['aw'] = rot
+    transform_dict['parent'] = parent
+    transform_dict['child']  = child
+    transform_dict['period'] = period
+    print '\nrosrun tf static_transform_publisher %(x)s %(y)s %(z)s %(ax)s %(ay)s %(az)s %(aw)s %(parent)s %(child)s %(period)s' % transform_dict
+    print '\n<node name="%(parent)s_to_%(child)s" pkg="tf" type="static_transform_publisher" args="%(x)s %(y)s %(z)s %(ax)s %(ay)s %(az)s %(aw)s %(parent)s %(child)s %(period)s"/>' % transform_dict
