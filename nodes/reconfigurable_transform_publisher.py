@@ -39,21 +39,22 @@ def config_cb(config, level):
         return config
 
 if __name__ == '__main__':
-    if len(sys.argv) == 10: # yaw-pitch-roll
+    argv = rospy.myargv()
+    if len(argv) == 10: # yaw-pitch-roll
         with config_lock:
-            trans = [float(n) for n in sys.argv[1:4]]
-            rot   = quaternion_from_euler(*list(reversed([float(n) for n in sys.argv[4:7]])))
-            parent = sys.argv[7]
-            child  = sys.argv[8]
-            period = float(sys.argv[9])
-    elif len(sys.argv) == 11: # quaternion
+            trans = [float(n) for n in argv[1:4]]
+            rot   = quaternion_from_euler(*list([float(n) for n in argv[4:7]]), axes='szyx')
+            parent = argv[7]
+            child  = argv[8]
+            period = float(argv[9])
+    elif len(argv) == 11: # quaternion
         with config_lock:
-            trans = [float(n) for n in sys.argv[1:4]]
-            rot   = [float(n) for n in sys.argv[4:8]]
-            parent = sys.argv[8]
-            child  = sys.argv[9]
-            period = float(sys.argv[10])
-    elif len(sys.argv) == 2 and sys.argv[1] == '-h':
+            trans = [float(n) for n in argv[1:4]]
+            rot   = [float(n) for n in argv[4:8]]
+            parent = argv[8]
+            child  = argv[9]
+            period = float(argv[10])
+    elif len(argv) == 2 and argv[1] == '-h':
         sys.stderr.write('''Usage: reconfigurable_transform_publisher x y z yaw pitch roll frame_id child_frame_id  period(milliseconds) 
 OR 
 Usage: reconfigurable_transform_publisher x y z qx qy qz qw frame_id child_frame_id  period(milliseconds) 
