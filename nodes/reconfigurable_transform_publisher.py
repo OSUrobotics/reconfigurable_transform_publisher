@@ -1,13 +1,12 @@
 #!/usr/bin/env python
-PACKAGE = 'reconfigurable_transform_publisher'
-import roslib; roslib.load_manifest(PACKAGE)
-from dynamic_reconfigure.server import Server
 from reconfigurable_transform_publisher.cfg import TransformConfig
+from dynamic_reconfigure.server import Server
 import rospy
 import tf
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 import sys
 from threading import RLock
+from easy_markers.interactive import InteractiveGenerator
 
 config_lock = RLock()
 broadcaster = None
@@ -38,6 +37,25 @@ def config_cb(config, level):
             set_from_config(config)
         return config
 
+def marker_cb(feedback):
+    updates ={
+     'x': feedback.pose.position.x,
+     'y': feedback.pose.position.y,
+     'z': feedback.pose.position.z
+    }
+    updates['yaw'], updates['pitch'], updates['roll'] = euler_from_quaternion(
+        (
+         feedback.pose.orientation.x,
+         feedback.pose.orientation.y,
+         feedback.pose.orientation.z,
+         feedback.pose.orientation.w,
+        ),
+        axes='rzyx') # don't know why this is the right axis sequence...
+    srv.update_configuration(updates)
+    ig.server.doSetPose(update=None, name=feedback.marker_name, pose=feedback.pose, header=feedback.header)
+    ig.server.applyChanges()
+
+
 if __name__ == '__main__':
     argv = rospy.myargv()
     if len(argv) == 10: # yaw-pitch-roll
@@ -63,14 +81,29 @@ Usage: reconfigurable_transform_publisher x y z qx qy qz qw frame_id child_frame
     else:
         set_from_config(TransformConfig.defaults)
         
-    rospy.init_node(PACKAGE)
+    rospy.init_node('reconfigurable_transform_publisher')
     broadcaster = tf.TransformBroadcaster()
     srv = Server(TransformConfig, config_cb)
+
+    ig = InteractiveGenerator()
+    ig.makeMarker(controls=['move_x',
+                            'rotate_x',
+                            'move_y',
+                            'rotate_y',
+                            'move_z',
+                            'rotate_z'],
+                  frame=parent,
+                  callback=marker_cb,
+                  name=child,
+                  pose=trans,
+                  rot=rot)
+
     r = rospy.Rate(1/(period/1000.0))
     while not rospy.is_shutdown():
         with config_lock:
             broadcaster.sendTransform(trans, rot, rospy.Time.now()+r.sleep_dur, child, parent)
         r.sleep()
+
     transform_dict = dict()
     transform_dict['x'], transform_dict['y'],transform_dict['z'] = trans
     transform_dict['ax'], transform_dict['ay'], transform_dict['az'], transform_dict['aw'] = rot
