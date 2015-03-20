@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from reconfigurable_transform_publisher.cfg import TransformConfig
+from reconfigurable_transform_publisher.utils import print_transform
 from dynamic_reconfigure.server import Server
 import rospy
 import tf
@@ -81,7 +82,7 @@ Usage: reconfigurable_transform_publisher x y z qx qy qz qw frame_id child_frame
     else:
         set_from_config(TransformConfig.defaults)
         
-    rospy.init_node('reconfigurable_transform_publisher')
+    rospy.init_node('reconfigurable_transform_publisher', anonymous=True)
     broadcaster = tf.TransformBroadcaster()
     srv = Server(TransformConfig, config_cb)
 
@@ -104,11 +105,4 @@ Usage: reconfigurable_transform_publisher x y z qx qy qz qw frame_id child_frame
             broadcaster.sendTransform(trans, rot, rospy.Time.now()+r.sleep_dur, child, parent)
         r.sleep()
 
-    transform_dict = dict()
-    transform_dict['x'], transform_dict['y'],transform_dict['z'] = trans
-    transform_dict['ax'], transform_dict['ay'], transform_dict['az'], transform_dict['aw'] = rot
-    transform_dict['parent'] = parent
-    transform_dict['child']  = child
-    transform_dict['period'] = period
-    print '\nrosrun tf static_transform_publisher %(x)s %(y)s %(z)s %(ax)s %(ay)s %(az)s %(aw)s %(parent)s %(child)s %(period)s' % transform_dict
-    print '\n<node name="%(parent)s_to_%(child)s" pkg="tf" type="static_transform_publisher" args="%(x)s %(y)s %(z)s %(ax)s %(ay)s %(az)s %(aw)s %(parent)s %(child)s %(period)s"/>' % transform_dict
+    print_transform(trans, rot, parent, child, period)
