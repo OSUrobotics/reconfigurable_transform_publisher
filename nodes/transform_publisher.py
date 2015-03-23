@@ -44,14 +44,12 @@ def marker_cb(feedback):
      'y': feedback.pose.position.y,
      'z': feedback.pose.position.z
     }
-    updates['yaw'], updates['pitch'], updates['roll'] = euler_from_quaternion(
-        (
+    updates['roll'], updates['pitch'], updates['yaw'] = PyKDL.Rotation.Quaternion(
          feedback.pose.orientation.x,
          feedback.pose.orientation.y,
          feedback.pose.orientation.z,
          feedback.pose.orientation.w,
-        ),
-        axes='rzyx') # don't know why this is the right axis sequence...
+        ).GetRPY()
     srv.update_configuration(updates)
     ig.server.doSetPose(update=None, name=feedback.marker_name, pose=feedback.pose, header=feedback.header)
     ig.server.applyChanges()
