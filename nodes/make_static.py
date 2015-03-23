@@ -30,6 +30,8 @@ if __name__ == '__main__':
         'This option should probably be used with -k')
     parser.add_argument('-p','--print',choices=['launch','shell','both'], dest='print_transform', help='Prints the launch or shell '\
         'command for running a static_transform_publisher for this transform.')
+    parser.add_argument('-w', '--wait', type=float, metavar='DURATION', default=5,
+        help='How long to wait for the transform before giving up')
 
     args = parser.parse_args()
     args.frame_id = args.frame_id.strip('/')
@@ -37,7 +39,7 @@ if __name__ == '__main__':
 
     rospy.init_node('make_static', anonymous=True)
     listener = tf.TransformListener()
-    listener.waitForTransform(args.frame_id, args.child_frame_id, rospy.Time(), rospy.Duration(5))
+    listener.waitForTransform(args.frame_id, args.child_frame_id, rospy.Time(), rospy.Duration(args.wait))
     trans, rot = listener.lookupTransform(args.frame_id, args.child_frame_id, rospy.Time())
 
     if args.kill:
