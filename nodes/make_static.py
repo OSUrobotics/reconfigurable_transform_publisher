@@ -39,8 +39,21 @@ if __name__ == '__main__':
 
     rospy.init_node('make_static', anonymous=True)
     listener = tf.TransformListener()
-    listener.waitForTransform(args.frame_id, args.child_frame_id, rospy.Time(), rospy.Duration(args.wait))
-    trans, rot = listener.lookupTransform(args.frame_id, args.child_frame_id, rospy.Time())
+
+    try:
+        listener.waitForTransform(args.frame_id, args.child_frame_id, rospy.Time(), rospy.Duration(args.wait))
+    except tf.Exception:
+        rospy.logerr("Couldn't find transform between %s and %s after waiting %s seconds."
+            % (args.frame_id, args.child_frame_id, args.wait))
+        import sys
+        sys.exit(1)
+
+    try:
+        trans, rot = listener.lookupTransform(args.frame_id, args.child_frame_id, rospy.Time())
+    except tf.Exception as e:
+        rospy.logerr(e.message)
+        import sys
+        sys.exit(1)
 
     if args.kill:
         import rosnode
