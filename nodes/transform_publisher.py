@@ -8,6 +8,7 @@ import PyKDL
 import sys
 from threading import RLock
 from easy_markers.interactive import InteractiveGenerator
+from geometry_msgs.msg import Pose
 
 config_lock = RLock()
 broadcaster = None
@@ -35,6 +36,14 @@ def config_cb(config, level):
             inited = True
         else:
             set_from_config(config)
+
+        # update the interactive marker
+        pose = Pose()
+        pose.position.x, pose.position.y, pose.position.z = trans
+        pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w = rot.GetQuaternion()
+        ig.server.doSetPose(update=None, name=child, pose=pose, header=rospy.Header(frame_id=parent))
+        ig.server.applyChanges()
+
         return config
 
 def marker_cb(feedback):
@@ -49,7 +58,7 @@ def marker_cb(feedback):
          feedback.pose.orientation.z,
          feedback.pose.orientation.w,
         ).GetRPY()
-    srv.update_configuration(updates)
+    srv.update_configuration(updates) # update dynamic_reconfigure
     ig.server.doSetPose(update=None, name=feedback.marker_name, pose=feedback.pose, header=feedback.header)
     ig.server.applyChanges()
 
@@ -82,7 +91,6 @@ Usage: reconfigurable_transform_publisher x y z qx qy qz qw frame_id child_frame
         
     rospy.init_node('reconfigurable_transform_publisher', anonymous=True)
     broadcaster = tf.TransformBroadcaster()
-    srv = Server(TransformConfig, config_cb)
 
     ig = InteractiveGenerator()
     ig.makeMarker(controls=['move_x',
@@ -96,6 +104,8 @@ Usage: reconfigurable_transform_publisher x y z qx qy qz qw frame_id child_frame
                   name=child,
                   pose=trans,
                   rot=rot.GetQuaternion())
+
+    srv = Server(TransformConfig, config_cb)
 
     r = rospy.Rate(1/(period/1000.0))
     while not rospy.is_shutdown():
