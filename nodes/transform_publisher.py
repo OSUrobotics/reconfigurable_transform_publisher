@@ -63,7 +63,7 @@ if __name__ == '__main__':
         with config_lock:
             trans = [float(n) for n in argv[1:4]]
             y,p,r = [float(n) for n in argv[4:7]]
-            rot = PyKDL.Rotation.RPY(y,p,r)
+            rot = PyKDL.Rotation.RPY(r,p,y)
             parent = argv[7]
             child  = argv[8]
             period = float(argv[9])
@@ -106,4 +106,4 @@ Usage: reconfigurable_transform_publisher x y z qx qy qz qw frame_id child_frame
             broadcaster.sendTransform(trans, rot.GetQuaternion(), rospy.Time.now()+r.sleep_dur, child, parent)
         r.sleep()
 
-    print_transform(trans, rot, parent, child, period)
+    print_transform(trans, rot.GetQuaternion(), parent, child, period)
