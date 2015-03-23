@@ -5,7 +5,6 @@ import tf
 from tf.msg import tfMessage
 from tf.transformations import euler_from_quaternion
 from reconfigurable_transform_publisher.utils import print_transform
-import dynamic_reconfigure.client
 
 def get_authority(parent_frame, child_frame):
     authorities = {}
@@ -62,7 +61,7 @@ if __name__ == '__main__':
 
     if args.reconfig is not None:
         from reconfigurable_transform_publisher.cfg import TransformConfig
-        from dynamic_reconfigure.server import Server
+        import dynamic_reconfigure.client
         client = dynamic_reconfigure.client.Client(args.reconfig)
 
         yaw, pitch, roll = euler_from_quaternion(rot)
