@@ -4,7 +4,8 @@ from reconfigurable_transform_publisher.utils import print_transform
 from dynamic_reconfigure.server import Server
 import rospy
 import tf
-from tf.transformations import quaternion_from_euler, euler_from_quaternion
+from tf.transformations import euler_from_quaternion
+import PyKDL
 import sys
 from threading import RLock
 from easy_markers.interactive import InteractiveGenerator
@@ -19,11 +20,10 @@ inited = False
 def set_from_config(config):
     global trans, rot, parent, child, inited
     trans = config['x'], config['y'], config['z']
-    rot = quaternion_from_euler(config['roll'], config['pitch'], config['yaw'])
+    rot = PyKDL.Rotation.RPY(config['roll'], config['pitch'], config['yaw'])
     parent = config['parent_frame']
     child = config['child_frame']
     inited = True
-
 
 def config_cb(config, level):
     global trans, rot, parent, child, inited
@@ -32,7 +32,7 @@ def config_cb(config, level):
             config['child_frame'] = child
             config['parent_frame'] = parent
             config['x'], config['y'], config['z'] = trans
-            config['yaw'], config['pitch'], config['roll'] = euler_from_quaternion(rot, axes='szyx')
+            config['roll'], config['pitch'], config['yaw'] = rot.GetRPY()
             inited = True
         else:
             set_from_config(config)
@@ -62,14 +62,15 @@ if __name__ == '__main__':
     if len(argv) == 10: # yaw-pitch-roll
         with config_lock:
             trans = [float(n) for n in argv[1:4]]
-            rot   = quaternion_from_euler(*list([float(n) for n in argv[4:7]]), axes='szyx')
+            y,p,r = [float(n) for n in argv[4:7]]
+            rot = PyKDL.Rotation.RPY(y,p,r)
             parent = argv[7]
             child  = argv[8]
             period = float(argv[9])
     elif len(argv) == 11: # quaternion
         with config_lock:
             trans = [float(n) for n in argv[1:4]]
-            rot   = [float(n) for n in argv[4:8]]
+            rot   = PyKDL.Rotation.Quaternion(*[float(n) for n in argv[4:8]])
             parent = argv[8]
             child  = argv[9]
             period = float(argv[10])
@@ -97,12 +98,12 @@ Usage: reconfigurable_transform_publisher x y z qx qy qz qw frame_id child_frame
                   callback=marker_cb,
                   name=child,
                   pose=trans,
-                  rot=rot)
+                  rot=rot.GetQuaternion())
 
     r = rospy.Rate(1/(period/1000.0))
     while not rospy.is_shutdown():
         with config_lock:
-            broadcaster.sendTransform(trans, rot, rospy.Time.now()+r.sleep_dur, child, parent)
+            broadcaster.sendTransform(trans, rot.GetQuaternion(), rospy.Time.now()+r.sleep_dur, child, parent)
         r.sleep()
 
     print_transform(trans, rot, parent, child, period)

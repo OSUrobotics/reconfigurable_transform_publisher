@@ -3,7 +3,7 @@ import argparse
 import rospy
 import tf
 from tf.msg import tfMessage
-from tf.transformations import euler_from_quaternion
+import PyKDL
 from reconfigurable_transform_publisher.utils import print_transform
 
 def get_authority(parent_frame, child_frame):
@@ -63,8 +63,7 @@ if __name__ == '__main__':
         from reconfigurable_transform_publisher.cfg import TransformConfig
         import dynamic_reconfigure.client
         client = dynamic_reconfigure.client.Client(args.reconfig)
-
-        yaw, pitch, roll = euler_from_quaternion(rot)
+        roll, pitch, yaw = PyKDL.Rotation.Quaternion(*rot).GetRPY()
         client.update_configuration({
             'parent_frame' : args.frame_id,
             'child_frame' : args.child_frame_id,

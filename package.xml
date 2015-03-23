@@ -25,7 +25,8 @@
   <run_depend>rospy</run_depend>
   <run_depend>easy_markers</run_depend>
   <run_depend>interactive_markers</run_depend>
-
+  <run_depend>python_orocos_kdl</run_depend>
+  
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>tf</test_depend> -->
   <!-- <test_depend>dynamic_reconfigure</test_depend> -->
