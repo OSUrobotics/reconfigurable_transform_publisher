@@ -4,7 +4,6 @@ from reconfigurable_transform_publisher.utils import print_transform
 from dynamic_reconfigure.server import Server
 import rospy
 import tf
-from tf.transformations import euler_from_quaternion
 import PyKDL
 import sys
 from threading import RLock
