@@ -32,7 +32,7 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--wait', type=float, metavar='DURATION', default=5,
         help='How long to wait for the transform before giving up')
 
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv())
     args.frame_id = args.frame_id.strip('/')
     args.child_frame_id = args.child_frame_id.strip('/')
 
