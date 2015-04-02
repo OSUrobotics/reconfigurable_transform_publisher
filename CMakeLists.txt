@@ -8,5 +8,12 @@ generate_dynamic_reconfigure_options(cfg/Transform.cfg)
 
 catkin_package(CATKIN_DEPENDS rospy tf dynamic_reconfigure)
 
-install(DIRECTORY nodes/ cfg/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY cfg/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+install(
+  PROGRAMS
+    nodes/make_static.py
+    nodes/transform_publisher.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 install(PROGRAMS nodes/transform_publisher.py DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
