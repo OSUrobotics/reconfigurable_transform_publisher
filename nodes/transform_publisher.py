@@ -92,7 +92,7 @@ Usage: reconfigurable_transform_publisher x y z qx qy qz qw frame_id child_frame
     rospy.init_node('reconfigurable_transform_publisher', anonymous=True)
     broadcaster = tf.TransformBroadcaster()
 
-    ig = InteractiveGenerator()
+    ig = InteractiveGenerator(rospy.resolve_name('~interactive_markers'))
     ig.makeMarker(controls=['move_x',
                             'rotate_x',
                             'move_y',
