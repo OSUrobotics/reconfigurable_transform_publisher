@@ -40,6 +40,7 @@ if __name__ == '__main__':
     listener = tf.TransformListener()
 
     try:
+        rospy.sleep(5)
         listener.waitForTransform(args.frame_id, args.child_frame_id, rospy.Time(), rospy.Duration(args.wait))
     except tf.Exception:
         rospy.logerr("Couldn't find transform between %s and %s after waiting %s seconds."
